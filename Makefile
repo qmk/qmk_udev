@@ -1,7 +1,7 @@
 PREFIX?=/usr/local
 DESTDIR?=
 
-CC = gcc
+CC ?= gcc
 CFLAGS  = -g -Wall -Wextra -Wpedantic -std=c11
 
 all: qmk_id
@@ -18,4 +18,8 @@ test: qmk_id_test
 clean:
 	$(RM) qmk_id qmk_id_test
 
-.PHONY: install test clean
+format:
+	clang-format -i qmk_id.c
+	clang-format -i qmk_id_test.c
+
+.PHONY: install test clean format
