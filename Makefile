@@ -1,7 +1,7 @@
 PREFIX?=/usr/local
 DESTDIR?=
 
-CC = gcc
+CC ?= gcc
 CFLAGS  = -g -Wall -Wextra -Wpedantic -std=c11
 
 all: qmk_id
