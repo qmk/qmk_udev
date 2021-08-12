@@ -58,7 +58,7 @@
 #    error Unknown target architecture
 #endif
 
-static const char qmk_id[]      = "ID_QMK=1\n";
+static const char   qmk_id[]    = "ID_QMK=1\n";
 static const size_t qmk_id_size = sizeof(qmk_id) - 1;
 
 static void close_fd(int *fd) {

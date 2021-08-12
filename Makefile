@@ -18,4 +18,8 @@ test: qmk_id_test
 clean:
 	$(RM) qmk_id qmk_id_test
 
-.PHONY: install test clean
+format:
+	clang-format -i qmk_id.c
+	clang-format -i qmk_id_test.c
+
+.PHONY: install test clean format
