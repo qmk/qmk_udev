@@ -1,0 +1,29 @@
+name: "Increment Version"
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  release:
+    name: "Increment patch version"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: actions/checkout@v2.3.4
+
+      - name: "Setup environment"
+        run: |
+          sudo apt-get update
+          sudo apt-get install python3-pip
+          sudo python3 -m pip install bumpversion
+
+      - name: "Bump version number"
+        run: |
+          if ! echo "$COMMIT_MSG" | grep 'New release'; then
+            bumpversion patch
+            git push --tags
+          fi
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
