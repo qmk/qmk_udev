@@ -2,6 +2,11 @@ name: "Increment Version"
 
 on:
   workflow_dispatch:
+    inputs:
+      version_part:
+        description: 'Which part of the version to increment (patch, minor, major)'
+        required: false
+        default: 'patch'
   push:
     branches:
       - "main"
@@ -22,13 +27,13 @@ jobs:
 
       - name: "Bump version number"
         run: |
-          if ! echo "$COMMIT_MSG" | grep 'New release'; then
-            git config --local user.email "hello@qmk.fm"
+          VERSION_PART="${VERSION_PART:-patch}"
             git config --local user.name "QMK Bot"
-            bumpversion patch
+            bumpversion $VERSION_PART
           fi
         env:
           COMMIT_MSG: ${{ github.event.head_commit.message }}
+          VERSION_PART: ${{ github.event.inputs.version_part }}
 
       - name: Push changes
         uses: ad-m/github-push-action@master
