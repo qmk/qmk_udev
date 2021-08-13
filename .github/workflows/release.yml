@@ -23,7 +23,7 @@ jobs:
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
-          automatic_release_tag: ${{ github.event.inputs.release_tag }}
+          automatic_release_tag: v${{ github.event.inputs.release_tag }}
           files: |
             50-qmk.rules
             qmk_id
