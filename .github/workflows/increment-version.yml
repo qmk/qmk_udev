@@ -22,6 +22,8 @@ jobs:
       - name: "Bump version number"
         run: |
           if ! echo "$COMMIT_MSG" | grep 'New release'; then
+            git config --local user.email "hello@qmk.fm"
+            git config --local user.name "QMK Bot"
             bumpversion patch
             git push --tags
           fi
