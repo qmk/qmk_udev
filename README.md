@@ -14,4 +14,12 @@ This program is included in all of the [QMK packages for Linux](https://github.c
 
 # Binary Download
 
-You can always download a statically compiled copy of the newest version with the [`latest` tag on the Releases page](https://github.com/qmk/qmk_udev/releases/tag/latest).
+You can always download a statically compiled copy of the newest version from the [`latest` Release](https://github.com/qmk/qmk_udev/releases/latest) running one of these commands:
+
+Wget:
+
+    wget https://github.com/qmk/qmk_udev/releases/latest/download/qmk_id
+
+Curl:
+
+    curl -LO https://github.com/qmk/qmk_udev/releases/latest/download/qmk_id
