@@ -16,7 +16,7 @@
    */
 
 #define _POSIX_C_SOURCE 200809L
-#define MY_VERSION 0.0.0
+#define MY_VERSION 0.0.1
 
 #include <stdint.h>
 #include <stdlib.h>
