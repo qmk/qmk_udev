@@ -7,7 +7,7 @@ from pathlib import Path
 import requests
 
 # Pull in environment vars
-version = environ.get('VERSION_NUMBER', '0.0.5')
+version = environ.get('VERSION_NUMBER', '0.0.6')
 gh_user = environ.get('GH_USERNAME', 'qmk-bot')
 gh_pat = environ.get('QMK_BOT_TOKEN', '')
 gh_repo_owner = environ.get('REPO_OWNER', 'qmk')
