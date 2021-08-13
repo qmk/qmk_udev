@@ -2,6 +2,10 @@ name: "Release"
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'What version to release.'
+        required: true
 
 jobs:
   release:
@@ -19,6 +23,7 @@ jobs:
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
+          automatic_release_tag: ${{ github.event.inputs.release_tag }}
           files: |
             50-qmk.rules
             qmk_id
