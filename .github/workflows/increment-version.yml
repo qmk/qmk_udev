@@ -26,10 +26,16 @@ jobs:
             git config --local user.email "hello@qmk.fm"
             git config --local user.name "QMK Bot"
             bumpversion patch
-            git push --tags
           fi
         env:
           COMMIT_MSG: ${{ github.event.head_commit.message }}
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          tags: true
 
       - name: Trigger Release Action
         run: ./trigger_action
