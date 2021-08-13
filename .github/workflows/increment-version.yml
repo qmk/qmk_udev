@@ -28,6 +28,8 @@ jobs:
       - name: "Bump version number"
         run: |
           VERSION_PART="${VERSION_PART:-patch}"
+          if ! echo "$COMMIT_MSG" | grep 'New release'; then
+            git config --local user.email "hello@qmk.fm"
             git config --local user.name "QMK Bot"
             bumpversion $VERSION_PART
           fi
