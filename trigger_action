@@ -15,7 +15,7 @@ gh_repo_name = environ.get('REPO_NAME', 'qmk_udev')
 gh_ref = environ.get('BRANCH_NAME', 'main')
 gh_workflow_ids = environ.get('WORKFLOW_IDS', 'release.yml').split(',')
 gh_api_url = environ.get('GITHUB_API_URL', 'https://api.github.com')
-gh_workflow_args = {'ref': gh_ref, 'accept': 'application/vnd.github.v3+json', 'inputs': {'release_tag': version}}
+gh_workflow_args = {'ref': gh_ref, 'inputs': {'release_tag': version}}
 gh_workflow_headers = {'Accept': 'application/vnd.github.v3+json'}
 
 for gh_workflow_id in gh_workflow_ids:
