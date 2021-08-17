@@ -66,9 +66,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="2a03", ATTRS{idProduct}=="0037", ENV{ID_QMK
 
 # hid bootloaders
 ## QMK HID
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="2067", TAG+="uaccess"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="2067", ENV{QMK_ID}="1"
 ## PJRC's HalfKay
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="0478", TAG+="uaccess"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="0478", ENV{QMK_ID}="1"
 
 SUBSYSTEM=="hidraw", KERNEL=="hidraw*", IMPORT{program}="qmk_id %S%p"
 
