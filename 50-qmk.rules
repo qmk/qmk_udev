@@ -63,6 +63,13 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="2a03", ATTRS{idProduct}=="0036", ENV{ID_QMK
 ### Micro
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2a03", ATTRS{idProduct}=="0037", ENV{ID_QMK}="1", ENV{ID_MM_DEVICE_IGNORE}="1"
 
+
+# hid bootloaders
+## QMK HID
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="2067", ENV{ID_QMK}="1"
+## PJRC's HalfKay
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="0478", ENV{ID_QMK}="1"
+
 SUBSYSTEM=="hidraw", KERNEL=="hidraw*", IMPORT{program}="qmk_id %S%p"
 
 # grant access to *all* hidraw devices
