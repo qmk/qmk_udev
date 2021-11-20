@@ -35,6 +35,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", ENV{ID_QMK
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="6124", ENV{ID_QMK}="1", ENV{ID_MM_DEVICE_IGNORE}="1"
 
 # Caterina (Pro Micro)
+## pid.codes shared PID
+### Keyboardio Atreus 2 Bootloader
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="2302", ENV{ID_QMK}="1", ENV{ID_MM_DEVICE_IGNORE}="1"
 ## Spark Fun Electronics
 ### Pro Micro 3V3/8MHz
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b4f", ATTRS{idProduct}=="9203", ENV{ID_QMK}="1", ENV{ID_MM_DEVICE_IGNORE}="1"
