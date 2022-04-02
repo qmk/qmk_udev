@@ -184,25 +184,28 @@ static int apply_syscall_filter(void) {
     // only allow rt_sigreturn(), exit(), exit_group() and write(STDOUT_FILENO, "QMK_ID=1", 9)
     struct sock_filter filter[] = {
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arch),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SECCOMP_ARCH_NATIVE, 0, 14),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SECCOMP_ARCH_NATIVE, 0, 16),
 
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_nr),
 
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_rt_sigreturn, 11, 0),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_exit_group, 10, 0),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_exit, 9, 0),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_write, 0, 9),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_rt_sigreturn, 13, 0),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_exit_group, 12, 0),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_exit, 11, 0),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_write, 0, 11),
 
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(0)),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, STDOUT_FILENO, 0, 7),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, STDOUT_FILENO, 0, 9),
 
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(1)),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, qmk_id_addr.lo, 0, 5),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, qmk_id_addr.lo, 0, 7),
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(1) + 4),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, qmk_id_addr.hi, 0, 3),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, qmk_id_addr.hi, 0, 5),
 
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(2)),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, qmk_id_size, 0, 1),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, qmk_id_size, 0, 3),
+
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(2) + 4),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, 0, 0, 1),
 
         BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
         BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_KILL_PROCESS),
