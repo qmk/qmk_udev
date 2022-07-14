@@ -18,27 +18,57 @@
 #define _POSIX_C_SOURCE 200809L
 #define MY_VERSION 0.1.1
 
-#include <stdint.h>
-#include <stdlib.h>
 #include <stddef.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/prctl.h>
 #include <sys/syscall.h>
 #include <linux/filter.h>
 #include <linux/seccomp.h>
 #include <linux/audit.h>
 
-#define _cleanup_close __attribute__((__cleanup__(close_fd)))
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
-#define syscall_arg(_n) (offsetof(struct seccomp_data, args[_n]))
-#define syscall_nr (offsetof(struct seccomp_data, nr))
-#define syscall_arch (offsetof(struct seccomp_data, arch))
+#ifndef NOLIBC
+#    include <stdint.h>
+#    include <stdlib.h>
+#    include <errno.h>
+#    include <fcntl.h>
+#    include <unistd.h>
+#    include <arpa/inet.h>
+#    include <sys/prctl.h>
+#endif
+
+#ifndef STDOUT_FILENO
+#    define STDOUT_FILENO 1
+#endif
 
 #ifndef O_PATH
-#    define O_PATH __O_PATH
+#    define O_PATH 010000000
+#endif
+
+#ifdef NOLIBC
+#    include <linux/prctl.h>
+#    include <asm/byteorder.h>
+
+static void abort(void) { raise(SIGABRT); }
+
+static int openat(int dirfd, const char *path, int flags, mode_t mode) {
+    int ret = my_syscall4(__NR_openat, dirfd, path, flags, mode);
+
+    if (ret < 0) {
+        SET_ERRNO(-ret);
+        ret = -1;
+    }
+    return ret;
+}
+
+static int prctl(int option, unsigned long arg2, unsigned long arg3, unsigned long arg4, unsigned long arg5) {
+    int ret = my_syscall5(__NR_prctl, option, arg2, arg3, arg4, arg5);
+
+    if (ret < 0) {
+        SET_ERRNO(-ret);
+        ret = -1;
+    }
+    return ret;
+}
+
+static uint32_t ntohl(uint32_t netlong) { return __be32_to_cpu(netlong); }
 #endif
 
 #if __x86_64__
@@ -58,6 +88,12 @@
 #else
 #    error Unknown target architecture
 #endif
+
+#define _cleanup_close __attribute__((__cleanup__(close_fd)))
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
+#define syscall_arg(_n) (offsetof(struct seccomp_data, args[_n]))
+#define syscall_nr (offsetof(struct seccomp_data, nr))
+#define syscall_arch (offsetof(struct seccomp_data, arch))
 
 static const char   qmk_id[]    = "ID_QMK=1\n";
 static const size_t qmk_id_size = sizeof(qmk_id) - 1;
@@ -169,7 +205,7 @@ static int is_collection(const uint8_t *report, size_t report_size, uint32_t usa
     }
 }
 
-static int is_teensy_style_console(const uint8_t *report, size_t report_size) { return is_collection(report, report_size, UINT32_C(0xFF310074), HID_COLLECTION_APPLICATION); }
+static int is_teensy_style_console(const uint8_t *report, size_t report_size) { return is_collection(report, report_size, 0xFF310074U, HID_COLLECTION_APPLICATION); }
 
 static int apply_syscall_filter(void) {
     union {
@@ -217,18 +253,18 @@ static int apply_syscall_filter(void) {
         return 1;
     }
 
-    if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog)) {
+    if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, (uintptr_t)&prog, 0, 0)) {
         return 1;
     }
     return 0;
 }
 
 static int read_report_descriptor(const char *report_dir, uint8_t *buf, size_t buf_size) {
-    int _cleanup_close sysfs_fd = openat(-1, report_dir, O_PATH | O_DIRECTORY);
+    int _cleanup_close sysfs_fd = openat(-1, report_dir, O_PATH | O_DIRECTORY, 0);
     if (sysfs_fd == -1) {
         return -1;
     }
-    int _cleanup_close report_fd = openat(sysfs_fd, "device/report_descriptor", O_RDONLY);
+    int _cleanup_close report_fd = openat(sysfs_fd, "device/report_descriptor", O_RDONLY, 0);
     if (report_fd == -1) {
         return -1;
     }
