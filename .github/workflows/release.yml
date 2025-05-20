@@ -17,7 +17,7 @@ jobs:
 
       - name: "Build & test"
         run: |
-          make LDFLAGS=-static
+          make NOLIBC=1
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
