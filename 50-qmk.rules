@@ -75,7 +75,7 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="0478", ENV{ID_QMK
 ## Sharkoon
 ### Skiller SGK50 S3
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="6332", ATTRS{idProduct}=="3663", ENV{ID_QMK}="1"
-### Skiller SGK50 S4
+### Skiller SGK50 S4 Gen2
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="6332", ATTRS{idProduct}=="1020", ENV{ID_QMK}="1"
 
 SUBSYSTEM=="hidraw", KERNEL=="hidraw*", IMPORT{program}="qmk_id %S%p"
