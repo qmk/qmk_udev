@@ -6,7 +6,7 @@ CFLAGS  = -g -Wall -Wextra
 ifneq ($(NOLIBC),)
 CFLAGS += -static -nostdlib -include nolibc.h -fno-asynchronous-unwind-tables -fno-ident -fno-stack-protector -Os -g0
 else
-	CFLAGS += -Wpedantic -std=c11
+CFLAGS += -Wpedantic -std=c11
 endif
 
 all: qmk_id
