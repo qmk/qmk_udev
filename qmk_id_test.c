@@ -19,7 +19,11 @@
 #include "qmk_id.c"
 #undef main
 
-#include <stdio.h>
+#ifdef NOLIBC
+#    define printf(...)
+#else
+#    include <stdio.h>
+#endif
 
 int main() {
     struct testcase {
