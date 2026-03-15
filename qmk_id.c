@@ -16,7 +16,7 @@
    */
 
 #define _POSIX_C_SOURCE 200809L
-#define MY_VERSION 0.1.4
+#define MY_VERSION 0.1.5
 
 #include <stddef.h>
 #include <sys/syscall.h>
