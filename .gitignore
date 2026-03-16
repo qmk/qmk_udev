@@ -51,5 +51,6 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+/nolibc.h
 /qmk_id
 /qmk_id_test
