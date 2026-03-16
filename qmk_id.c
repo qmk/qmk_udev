@@ -15,7 +15,6 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
    */
 
-#define _POSIX_C_SOURCE 200809L
 #define MY_VERSION 0.1.9
 
 #include <stddef.h>
@@ -23,16 +22,8 @@
 #include <linux/filter.h>
 #include <linux/seccomp.h>
 #include <linux/audit.h>
-
-#ifndef NOLIBC
-#    include <stdint.h>
-#    include <stdlib.h>
-#    include <errno.h>
-#    include <fcntl.h>
-#    include <unistd.h>
-#    include <arpa/inet.h>
-#    include <sys/prctl.h>
-#endif
+#include <linux/prctl.h>
+#include <asm/byteorder.h>
 
 #ifndef STDOUT_FILENO
 #    define STDOUT_FILENO 1
@@ -42,12 +33,7 @@
 #    define O_PATH 010000000
 #endif
 
-#ifdef NOLIBC
-#    include <linux/prctl.h>
-#    include <asm/byteorder.h>
-
 static uint32_t ntohl(uint32_t netlong) { return __be32_to_cpu(netlong); }
-#endif
 
 #if __x86_64__
 #    define SECCOMP_ARCH_NATIVE AUDIT_ARCH_X86_64

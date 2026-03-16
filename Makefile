@@ -2,12 +2,7 @@ PREFIX?=/usr/local
 DESTDIR?=
 
 CC ?= gcc
-CFLAGS  = -g -Wall -Wextra
-ifneq ($(NOLIBC),)
-CFLAGS += -static -nostdlib -include nolibc/nolibc.h -fno-asynchronous-unwind-tables -fno-ident -fno-stack-protector -Os -g0
-else
-CFLAGS += -Wpedantic -std=c11
-endif
+CFLAGS  = -Wall -Wextra -static -nostdlib -include nolibc/nolibc.h -fno-asynchronous-unwind-tables -fno-ident -fno-stack-protector -Os
 
 all: qmk_id
 

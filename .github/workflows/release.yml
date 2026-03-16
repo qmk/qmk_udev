@@ -19,13 +19,13 @@ jobs:
         run: sudo apt-get install -y gcc-aarch64-linux-gnu gcc-riscv64-linux-gnu qemu-user-static
 
       - name: "Build linuxX64"
-        run: make NOLIBC=1 CC=gcc && mv qmk_id qmk_id-linuxX64 && make clean
+        run: make CC=gcc && mv qmk_id qmk_id-linuxX64 && make clean
 
       - name: "Build linuxARM64"
-        run: make NOLIBC=1 CC=aarch64-linux-gnu-gcc && mv qmk_id qmk_id-linuxARM64 && make clean
+        run: make CC=aarch64-linux-gnu-gcc && mv qmk_id qmk_id-linuxARM64 && make clean
 
       - name: "Build linuxRV64"
-        run: make NOLIBC=1 CC=riscv64-linux-gnu-gcc && mv qmk_id qmk_id-linuxRV64 && make clean
+        run: make CC=riscv64-linux-gnu-gcc && mv qmk_id qmk_id-linuxRV64 && make clean
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
