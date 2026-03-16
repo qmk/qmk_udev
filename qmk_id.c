@@ -46,28 +46,6 @@
 #    include <linux/prctl.h>
 #    include <asm/byteorder.h>
 
-static void abort(void) { raise(SIGABRT); }
-
-static int openat(int dirfd, const char *path, int flags, mode_t mode) {
-    int ret = my_syscall4(__NR_openat, dirfd, path, flags, mode);
-
-    if (ret < 0) {
-        SET_ERRNO(-ret);
-        ret = -1;
-    }
-    return ret;
-}
-
-static int prctl(int option, unsigned long arg2, unsigned long arg3, unsigned long arg4, unsigned long arg5) {
-    int ret = my_syscall5(__NR_prctl, option, arg2, arg3, arg4, arg5);
-
-    if (ret < 0) {
-        SET_ERRNO(-ret);
-        ret = -1;
-    }
-    return ret;
-}
-
 static uint32_t ntohl(uint32_t netlong) { return __be32_to_cpu(netlong); }
 #endif
 
