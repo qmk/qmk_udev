@@ -30,6 +30,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05df", ENV{ID_QMK
 # USBAspLoader
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", ENV{ID_QMK}="1"
 
+# USBtinyISP
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1782", ATTRS{idProduct}=="0c9f", ENV{ID_QMK}="1"
+
 # ModemManager should ignore the following devices
 # Atmel SAM-BA (Massdrop)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="6124", ENV{ID_QMK}="1", ENV{ID_MM_DEVICE_IGNORE}="1"
@@ -71,6 +74,18 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="2a03", ATTRS{idProduct}=="0037", ENV{ID_QMK
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="2067", ENV{ID_QMK}="1"
 ## PJRC's HalfKay
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="0478", ENV{ID_QMK}="1"
+
+# APM32 DFU
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="314b", ATTRS{idProduct}=="0106", ENV{ID_QMK}="1"
+
+# GD32V DFU
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="28e9", ATTRS{idProduct}=="0189", ENV{ID_QMK}="1"
+
+# WB32 DFU
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="342d", ATTRS{idProduct}=="dfa0", ENV{ID_QMK}="1"
+
+# AT32 DFU
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e3c", ATTRS{idProduct}=="df11", ENV{ID_QMK}="1"
 
 # Raspberry Pi RP2040/RP2350 BOOTSEL
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="0003", ENV{ID_QMK}="1"
