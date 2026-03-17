@@ -27,11 +27,6 @@ jobs:
       - name: Build linuxRV64
         run: make CC=riscv64-linux-gnu-gcc && mv qmk_id qmk_id-linuxRV64 && make clean
 
-      - name: Delete existing release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release delete --repo ${{ github.repository }} ${{ github.ref_name }} --yes || true
-
       - uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe
         with:
           make_latest: true
