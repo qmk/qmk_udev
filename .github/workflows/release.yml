@@ -29,6 +29,7 @@ jobs:
 
       - uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe
         with:
+          tag_name: v${{ github.event.inputs.release_tag }}
           make_latest: true
           files: |
             50-qmk.rules
