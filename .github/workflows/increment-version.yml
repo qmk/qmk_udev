@@ -1,31 +1,31 @@
-name: "Increment Version"
+name: Increment Version
 
 on:
   workflow_dispatch:
     inputs:
       version_part:
-        description: 'Which part of the version to increment (patch, minor, major)'
+        description: Which part of the version to increment (patch, minor, major)
         required: false
-        default: 'patch'
+        default: patch
   push:
     branches:
-      - "main"
+      - main
 
 jobs:
   release:
-    name: "Increment patch version"
-    runs-on: "ubuntu-latest"
+    name: Increment patch version
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
 
-      - name: "Setup environment"
+      - name: Setup environment
         run: |
           sudo apt-get update
           sudo apt-get install python3-pip
-          sudo python3 -m pip install bumpversion
+          sudo python3 -m pip install bumpversion==0.6.0
 
-      - name: "Bump version number"
+      - name: Bump version number
         run: |
           VERSION_PART="${VERSION_PART:-patch}"
           if ! echo "$COMMIT_MSG" | grep 'New release'; then
@@ -38,7 +38,7 @@ jobs:
           VERSION_PART: ${{ github.event.inputs.version_part }}
 
       - name: Push changes
-        uses: ad-m/github-push-action@master
+        uses: ad-m/github-push-action@4cc74773234f74829a8c21bc4d69dd4be9cfa599
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: main

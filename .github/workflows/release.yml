@@ -1,37 +1,40 @@
-name: "Release"
+name: Release
 
 on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'What version to release.'
+        description: What version to release.
         required: true
 
 jobs:
   release:
-    name: "New Release"
+    name: New Release
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
 
-      - name: "Install cross-compilers"
+      - name: Install cross-compilers
         run: sudo apt-get install -y gcc-aarch64-linux-gnu gcc-riscv64-linux-gnu qemu-user-static
 
-      - name: "Build linuxX64"
+      - name: Build linuxX64
         run: make CC=gcc && mv qmk_id qmk_id-linuxX64 && make clean
 
-      - name: "Build linuxARM64"
+      - name: Build linuxARM64
         run: make CC=aarch64-linux-gnu-gcc && mv qmk_id qmk_id-linuxARM64 && make clean
 
-      - name: "Build linuxRV64"
+      - name: Build linuxRV64
         run: make CC=riscv64-linux-gnu-gcc && mv qmk_id qmk_id-linuxRV64 && make clean
 
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - name: Delete existing release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete --repo ${{ github.repository }} ${{ github.ref_name }} --yes || true
+
+      - uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-          automatic_release_tag: v${{ github.event.inputs.release_tag }}
+          make_latest: true
           files: |
             50-qmk.rules
             qmk_id-linuxX64

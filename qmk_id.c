@@ -181,7 +181,7 @@ static int apply_syscall_filter(void) {
 
     qmk_id_addr.raw = (uintptr_t)qmk_id;
 
-    // only allow rt_sigreturn(), exit(), exit_group() and write(STDOUT_FILENO, "QMK_ID=1", 9)
+    // only allow rt_sigreturn(), exit(), exit_group() and write(STDOUT_FILENO, "ID_QMK=1", 9)
     struct sock_filter filter[] = {
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arch),
         BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SECCOMP_ARCH_NATIVE, 0, 16),

@@ -1,4 +1,3 @@
----
 BasedOnStyle: Google
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: 'true'
@@ -22,5 +21,3 @@ SpaceBeforeParens: ControlStatements
 SpaceInEmptyParentheses: 'false'
 TabWidth: '4'
 UseTab: Never
-
-...

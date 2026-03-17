@@ -19,7 +19,6 @@
 #include "qmk_id.c"
 #undef main
 
-
 int main() {
     struct testcase {
         char    description[100];
