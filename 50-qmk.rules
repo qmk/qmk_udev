@@ -91,11 +91,10 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e3c", ATTRS{idProduct}=="df11", ENV{ID_QMK
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="0003", ENV{ID_QMK}="1"
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000f", ENV{ID_QMK}="1"
 
+# Query HID descriptors to determine QMK-specific hidraw devices
 SUBSYSTEM=="hidraw", KERNEL=="hidraw*", IMPORT{program}="qmk_id %S%p"
 
-# grant access to *all* hidraw devices
-# SUBSYSTEM=="hidraw", KERNEL=="hidraw*", ENV{ID_QMK}="1"
-
+# Apply tag if QMK endpoint found
 ENV{ID_QMK}=="1", TAG+="uaccess"
 
 LABEL="qmk_end"

@@ -169,7 +169,19 @@ static int is_collection(const uint8_t *report, size_t report_size, uint32_t usa
     }
 }
 
-static int is_teensy_style_console(const uint8_t *report, size_t report_size) { return is_collection(report, report_size, 0xFF310074U, HID_COLLECTION_APPLICATION); }
+static const uint32_t qmk_hid_usages[] = {
+    0xFF310074U,  // console (Teensy-style)
+    0xFF600061U,  // raw HID (default for QMK)
+    0xFF510058U,  // XAP
+};
+
+static int is_qmk_hid(const uint8_t *report, size_t report_size) {
+    for (size_t i = 0; i < ARRAY_SIZE(qmk_hid_usages); i++) {
+        int ret = is_collection(report, report_size, qmk_hid_usages[i], HID_COLLECTION_APPLICATION);
+        if (ret) return ret;
+    }
+    return 0;
+}
 
 static int apply_syscall_filter(void) {
     union {
@@ -244,7 +256,7 @@ int main(int argc, char **argv) {
         return EINVAL;
     }
 
-    uint8_t buf[100];
+    uint8_t buf[100];  // Only need the first bunch of bytes of the descriptor, the relevant items are always at the beginning
     ssize_t r = read_report_descriptor(argv[1], buf, sizeof(buf));
     if (r == -1) {
         return errno;
@@ -254,11 +266,11 @@ int main(int argc, char **argv) {
         return errno;
     }
 
-    int is_c = is_teensy_style_console(buf, r);
-    if (is_c < 0) {
-        return -is_c;
+    int is_hid = is_qmk_hid(buf, r);
+    if (is_hid < 0) {
+        return -is_hid;
     }
-    if (is_c > 0) {
+    if (is_hid > 0) {
         write(STDOUT_FILENO, qmk_id, qmk_id_size);
     }
     return 0;
