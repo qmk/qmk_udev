@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
    */
 
-#define MY_VERSION 0.1.16
+#define MY_VERSION 0.1.17
 
 #include <stddef.h>
 #include <sys/syscall.h>
