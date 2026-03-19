@@ -59,8 +59,11 @@ static uint32_t ntohl(uint32_t netlong) { return __be32_to_cpu(netlong); }
 #define syscall_nr (offsetof(struct seccomp_data, nr))
 #define syscall_arch (offsetof(struct seccomp_data, arch))
 
-static const char   qmk_id[]    = "ID_QMK=1\n";
-static const size_t qmk_id_size = sizeof(qmk_id) - 1;
+struct qmk_endpoint {
+    uint32_t    usage;
+    const char *output;
+    size_t      output_size;
+};
 
 static void close_fd(int *fd) {
     if (fd && *fd != -1) {
@@ -169,55 +172,83 @@ static int is_collection(const uint8_t *report, size_t report_size, uint32_t usa
     }
 }
 
-static const uint32_t qmk_hid_usages[] = {
-    0xFF310074U,  // console (Teensy-style)
-    0xFF600061U,  // raw HID (default for QMK)
-    0xFF510058U,  // XAP
+static const char ep_output_console[] = "ID_QMK=1\nID_QMK_EP=console\n";
+static const char ep_output_raw_hid[] = "ID_QMK=1\nID_QMK_EP=raw-hid\n";
+static const char ep_output_xap[]     = "ID_QMK=1\nID_QMK_EP=xap\n";
+
+static const struct qmk_endpoint qmk_endpoints[] = {
+    {0xFF310074U, ep_output_console, sizeof(ep_output_console) - 1},
+    {0xFF600061U, ep_output_raw_hid, sizeof(ep_output_raw_hid) - 1},
+    {0xFF510058U, ep_output_xap, sizeof(ep_output_xap) - 1},
 };
 
-static int is_qmk_hid(const uint8_t *report, size_t report_size) {
-    for (size_t i = 0; i < ARRAY_SIZE(qmk_hid_usages); i++) {
-        int ret = is_collection(report, report_size, qmk_hid_usages[i], HID_COLLECTION_APPLICATION);
-        if (ret) return ret;
+static int find_qmk_endpoint(const uint8_t *report, size_t report_size, const struct qmk_endpoint **out) {
+    for (size_t i = 0; i < ARRAY_SIZE(qmk_endpoints); i++) {
+        int ret = is_collection(report, report_size, qmk_endpoints[i].usage, HID_COLLECTION_APPLICATION);
+        if (ret < 0) return ret;
+        if (ret > 0) {
+            *out = &qmk_endpoints[i];
+            return 1;
+        }
     }
+    *out = NULL;
     return 0;
 }
 
 static int apply_syscall_filter(void) {
-    union {
-        struct {
-            uint32_t lo, hi;
-        };
-        uint64_t raw;
-    } qmk_id_addr;
+    // clang-format off
+    union { struct { uint32_t lo, hi; }; uint64_t raw; } a1, a2, a3;
+    // clang-format on
+    a1.raw = (uintptr_t)ep_output_console;
+    a2.raw = (uintptr_t)ep_output_raw_hid;
+    a3.raw = (uintptr_t)ep_output_xap;
 
-    qmk_id_addr.raw = (uintptr_t)qmk_id;
-
-    // only allow rt_sigreturn(), exit(), exit_group() and write(STDOUT_FILENO, "ID_QMK=1", 9)
+    // Allow rt_sigreturn/exit/exit_group unconditionally.
+    // Allow write(STDOUT_FILENO, buf, size) only for the three known output strings.
+    // Filter layout (29 instructions, indices [0]..[28]):
+    //   [0..8]   arch + syscall-nr + fd checks
+    //   [9..14]  entry 1: console
+    //   [15..20] entry 2: raw-hid
+    //   [21..26] entry 3: xap
+    //   [27]     ALLOW
+    //   [28]     KILL
     struct sock_filter filter[] = {
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arch),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SECCOMP_ARCH_NATIVE, 0, 16),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SECCOMP_ARCH_NATIVE, 0, 26),
 
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_nr),
 
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_rt_sigreturn, 13, 0),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_exit_group, 12, 0),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_exit, 11, 0),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_write, 0, 11),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_rt_sigreturn, 23, 0),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_exit_group, 22, 0),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_exit, 21, 0),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_write, 0, 21),
 
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(0)),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, STDOUT_FILENO, 0, 9),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, STDOUT_FILENO, 0, 19),
 
+        // entry 1: console
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(1)),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, qmk_id_addr.lo, 0, 7),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, a1.lo, 0, 4),
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(1) + 4),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, qmk_id_addr.hi, 0, 5),
-
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, a1.hi, 0, 2),
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(2)),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, qmk_id_size, 0, 3),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, sizeof(ep_output_console) - 1, 12, 0),
 
-        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(2) + 4),
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, 0, 0, 1),
+        // entry 2: raw-hid
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(1)),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, a2.lo, 0, 4),
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(1) + 4),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, a2.hi, 0, 2),
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(2)),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, sizeof(ep_output_raw_hid) - 1, 6, 0),
+
+        // entry 3: xap
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(1)),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, a3.lo, 0, 5),
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(1) + 4),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, a3.hi, 0, 3),
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, syscall_arg(2)),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, sizeof(ep_output_xap) - 1, 0, 1),
 
         BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
         BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_KILL_PROCESS),
@@ -266,12 +297,14 @@ int main(int argc, char **argv) {
         return errno;
     }
 
-    int is_hid = is_qmk_hid(buf, r);
-    if (is_hid < 0) {
-        return -is_hid;
+    const struct qmk_endpoint *ep  = NULL;
+    int                        ret = find_qmk_endpoint(buf, r, &ep);
+    if (ret < 0) {
+        return -ret;
     }
-    if (is_hid > 0) {
-        write(STDOUT_FILENO, qmk_id, qmk_id_size);
+
+    if (ep) {
+        write(STDOUT_FILENO, ep->output, ep->output_size);
     }
     return 0;
 }
