@@ -53,6 +53,7 @@ int main() {
 
     int num_testcases = ARRAY_SIZE(testcases);
 
+    printf("TAP version 13\n");
     printf("1..%d\n", num_testcases);
 
     int failed = 0;
