@@ -25,14 +25,6 @@
 #include <linux/prctl.h>
 #include <asm/byteorder.h>
 
-#ifndef STDOUT_FILENO
-#    define STDOUT_FILENO 1
-#endif
-
-#ifndef O_PATH
-#    define O_PATH 010000000
-#endif
-
 static uint32_t ntohl(uint32_t netlong) { return __be32_to_cpu(netlong); }
 
 #if __x86_64__
