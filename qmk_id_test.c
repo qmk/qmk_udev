@@ -21,33 +21,30 @@
 
 int main() {
     struct testcase {
-        char     description[100];
-        int      expected_ret;
-        uint32_t usage;
-        size_t   report_size;
-        uint8_t  report[100];
+        char        description[100];
+        int         expected_ret;
+        const char *expected_output;
+        size_t      report_size;
+        uint8_t     report[100];
     };
 
     // clang-format off
     struct testcase testcases[] = {
+        {"empty input",                  -EIO, NULL,              0,  {0}},
         // console (Teensy-style, 0xFF310074)
-        {"console: empty input",                  -EIO, 0xFF310074U, 0,  {0}},
-        {"console: basic descriptor",             1,    0xFF310074U, 7,  {0x06, 0x31, 0xFF, 0x09, 0x74, 0xA1, 0x01}},
-        {"console: different usage page",         0,    0xFF310074U, 7,  {0x06, 0x30, 0xFF, 0x09, 0x74, 0xA1, 0x01}},
-        {"console: different usage",              0,    0xFF310074U, 7,  {0x06, 0x31, 0xFF, 0x09, 0x73, 0xA1, 0x01}},
-        {"console: empty long items",             1,    0xFF310074U, 10, {0xFE, 0X00, 0xF0, 0x06, 0x31, 0xFF, 0x09, 0x74, 0xA1, 0x01}},
-        {"console: long items",                   1,    0xFF310074U, 11, {0xFE, 0X01, 0xF0, 0x00, 0x06, 0x31, 0xFF, 0x09, 0x74, 0xA1, 0x01}},
+        {"console: basic descriptor",             1,    ep_output_console, 7,  {0x06, 0x31, 0xFF, 0x09, 0x74, 0xA1, 0x01}},
+        {"console: different usage page",         0,    NULL,              7,  {0x06, 0x30, 0xFF, 0x09, 0x74, 0xA1, 0x01}},
+        {"console: different usage",              0,    NULL,              7,  {0x06, 0x31, 0xFF, 0x09, 0x73, 0xA1, 0x01}},
+        {"console: empty long items",             1,    ep_output_console, 10, {0xFE, 0X00, 0xF0, 0x06, 0x31, 0xFF, 0x09, 0x74, 0xA1, 0x01}},
+        {"console: long items",                   1,    ep_output_console, 11, {0xFE, 0X01, 0xF0, 0x00, 0x06, 0x31, 0xFF, 0x09, 0x74, 0xA1, 0x01}},
         // raw HID (0xFF600061)
-        {"raw hid: empty input",                  -EIO, 0xFF600061U, 0,  {0}},
-        {"raw hid: basic descriptor",             1,    0xFF600061U, 7,  {0x06, 0x60, 0xFF, 0x09, 0x61, 0xA1, 0x01}},
-        {"raw hid: different usage page",         0,    0xFF600061U, 7,  {0x06, 0x31, 0xFF, 0x09, 0x61, 0xA1, 0x01}},
-        {"raw hid: different usage",              0,    0xFF600061U, 7,  {0x06, 0x60, 0xFF, 0x09, 0x60, 0xA1, 0x01}},
-        {"raw hid: console descriptor no match",  0,    0xFF600061U, 7,  {0x06, 0x31, 0xFF, 0x09, 0x74, 0xA1, 0x01}},
+        {"raw hid: basic descriptor",             1,    ep_output_raw_hid, 7,  {0x06, 0x60, 0xFF, 0x09, 0x61, 0xA1, 0x01}},
+        {"raw hid: different usage page",         0,    NULL,              7,  {0x06, 0x31, 0xFF, 0x09, 0x61, 0xA1, 0x01}},
+        {"raw hid: different usage",              0,    NULL,              7,  {0x06, 0x60, 0xFF, 0x09, 0x60, 0xA1, 0x01}},
         // XAP (0xFF510058)
-        {"xap: empty input",                      -EIO, 0xFF510058U, 0,  {0}},
-        {"xap: basic descriptor",                 1,    0xFF510058U, 7,  {0x06, 0x51, 0xFF, 0x09, 0x58, 0xA1, 0x01}},
-        {"xap: different usage page",             0,    0xFF510058U, 7,  {0x06, 0x31, 0xFF, 0x09, 0x58, 0xA1, 0x01}},
-        {"xap: different usage",                  0,    0xFF510058U, 7,  {0x06, 0x51, 0xFF, 0x09, 0x57, 0xA1, 0x01}},
+        {"xap: basic descriptor",                 1,    ep_output_xap,     7,  {0x06, 0x51, 0xFF, 0x09, 0x58, 0xA1, 0x01}},
+        {"xap: different usage page",             0,    NULL,              7,  {0x06, 0x31, 0xFF, 0x09, 0x58, 0xA1, 0x01}},
+        {"xap: different usage",                  0,    NULL,              7,  {0x06, 0x51, 0xFF, 0x09, 0x57, 0xA1, 0x01}},
     };
     // clang-format on
 
@@ -59,14 +56,19 @@ int main() {
     int failed = 0;
 
     for (int i = 0; i < num_testcases; i++) {
-        struct testcase tc  = testcases[i];
-        int             ret = is_collection(tc.report, tc.report_size, tc.usage, HID_COLLECTION_APPLICATION);
+        struct testcase            tc       = testcases[i];
+        const struct qmk_endpoint *endpoint = NULL;
+        int                        ret      = find_qmk_endpoint(tc.report, tc.report_size, &endpoint);
+        const char                *output   = endpoint ? endpoint->output : NULL;
 
-        if (ret == tc.expected_ret) {
-            printf("ok %d - %s\n", i + 1, tc.description);
-        } else {
+        if (ret != tc.expected_ret) {
             failed++;
             printf("not ok %d - %s\n  result %d != expected %d\n", i + 1, tc.description, ret, tc.expected_ret);
+        } else if (output != tc.expected_output) {
+            failed++;
+            printf("not ok %d - %s\n  output '%s' != expected '%s'\n", i + 1, tc.description, output, tc.expected_output);
+        } else {
+            printf("ok %d - %s\n", i + 1, tc.description);
         }
     }
 
