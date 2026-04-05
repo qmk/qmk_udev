@@ -128,7 +128,7 @@ static int parse_type(const uint8_t *report, size_t report_size, size_t *offset,
     return 0;
 }
 
-static int is_collection(const uint8_t *report, size_t report_size, uint32_t usage, enum hid_collection_type collection_type) {
+static int get_collection(const uint8_t *report, size_t report_size, uint32_t *usage, enum hid_collection_type *collection_type) {
     uint32_t up = 0, u = 0, ct = 0;
     size_t   offset = 0;
     int      ret;
@@ -167,7 +167,9 @@ static int is_collection(const uint8_t *report, size_t report_size, uint32_t usa
                 abort();
         }
         if (u && ct) {
-            return usage == u && collection_type == ct;
+            *usage           = u;
+            *collection_type = ct;
+            return 0;
         }
     }
 }
@@ -183,10 +185,16 @@ static const struct qmk_endpoint qmk_endpoints[] = {
 };
 
 static int find_qmk_endpoint(const uint8_t *report, size_t report_size, const struct qmk_endpoint **out) {
+    enum hid_collection_type collection_type;
+    uint32_t                 usage;
+    int                      ret;
+
+    ret = get_collection(report, report_size, &usage, &collection_type);
+    if (ret < 0) return ret;
+    if (collection_type != HID_COLLECTION_APPLICATION) return 0;
+
     for (size_t i = 0; i < ARRAY_SIZE(qmk_endpoints); i++) {
-        int ret = is_collection(report, report_size, qmk_endpoints[i].usage, HID_COLLECTION_APPLICATION);
-        if (ret < 0) return ret;
-        if (ret > 0) {
+        if (qmk_endpoints[i].usage == usage) {
             *out = &qmk_endpoints[i];
             return 1;
         }
