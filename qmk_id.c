@@ -191,7 +191,6 @@ static int find_qmk_endpoint(const uint8_t *report, size_t report_size, const st
             return 1;
         }
     }
-    *out = NULL;
     return 0;
 }
 
