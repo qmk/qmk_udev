@@ -27,7 +27,7 @@ jobs:
       - name: Build linuxRV64
         run: make CC=riscv64-linux-gnu-gcc && mv qmk_id qmk_id-linuxRV64 && make clean
 
-      - uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe
+      - uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
         with:
           tag_name: v${{ github.event.inputs.release_tag }}
           make_latest: true
