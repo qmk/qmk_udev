@@ -35,6 +35,10 @@ static uint32_t ntohl(uint32_t netlong) { return __be32_to_cpu(netlong); }
 #    define SECCOMP_ARCH_NATIVE AUDIT_ARCH_ARM
 #elif __aarch64__
 #    define SECCOMP_ARCH_NATIVE AUDIT_ARCH_AARCH64
+#elif defined(__loongarch_lp64)
+#    define SECCOMP_ARCH_NATIVE AUDIT_ARCH_LOONGARCH64
+#elif defined(__loongarch_ilp32)
+#    define SECCOMP_ARCH_NATIVE AUDIT_ARCH_LOONGARCH32
 #elif __riscv
 #    if __riscv_xlen == 32
 #        define SECCOMP_ARCH_NATIVE AUDIT_ARCH_RISCV32
